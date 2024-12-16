@@ -190,10 +190,10 @@ def main():
 
         # Capture buttons for each camera
         capture_col1, capture_col2, capture_col3, capture_col4 = st.columns(4)
-        capture_button1 = capture_col1.button("Capture Depan", disabled=st.session_state.capture_flags[0])
+        capture_button1 = capture_col1.button("Capture Depan ", disabled=st.session_state.capture_flags[0])
         capture_button2 = capture_col2.button("Capture Belakang", disabled=st.session_state.capture_flags[1])
-        capture_button3 = capture_col3.button("Capture Kanan", disabled=st.session_state.capture_flags[2])
-        capture_button4 = capture_col4.button("Capture Kiri", disabled=st.session_state.capture_flags[3])
+        capture_button3 = capture_col3.button("Capture Kanan ", disabled=st.session_state.capture_flags[2])
+        capture_button4 = capture_col4.button("Capture Kiri ", disabled=st.session_state.capture_flags[3])
 
         # Menjalankan Keempat Kamera
         if st.session_state.cameras_active:
