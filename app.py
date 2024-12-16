@@ -1,4 +1,3 @@
-# Import library yang diperlukan
 import streamlit as st
 import numpy as np
 from datetime import datetime
@@ -52,18 +51,6 @@ def init_session_state():
     
     if 'cameras_active' not in st.session_state:
         st.session_state.cameras_active = False
-        
-    if 'placeholders' not in st.session_state:
-        st.session_state.placeholders = {}
-
-def estimateSpeed(location1, location2):
-    """Menghitung estimasi kecepatan kendaraan"""
-    d_pixels = math.sqrt(math.pow(location2[0] - location1[0], 2) + math.pow(location2[1] - location1[1], 2))
-    ppm = 8.8
-    d_meters = d_pixels / ppm
-    fps = 18
-    speed = d_meters * fps * 3.6
-    return speed
 
 @st.cache_resource
 def load_cascade_classifier():
@@ -105,7 +92,7 @@ def process_video(video_path):
             frame_counter += 1
             
             if not ret:
-                cap.set(cv2.CAP_PROP_POS_FRAMES, 0)  # Loop video
+                cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
                 continue
                 
             if frame_counter % frame_skip == 0:
@@ -142,7 +129,6 @@ def laporkan_kecelakaan():
         location = st.text_input("Lokasi Kejadian")
         date = st.date_input("Tanggal Kejadian")
         
-        # Upload gambar
         image_file = st.file_uploader("Unggah Gambar", type=["jpg", "jpeg", "png"])
         
         submitted = st.form_submit_button("Kirim Laporan")
@@ -150,12 +136,10 @@ def laporkan_kecelakaan():
         if submitted:
             if title and description and location and image_file:
                 try:
-                    # Simpan gambar
                     image_path = os.path.join(CAPTURED_IMAGES_DIR, image_file.name)
                     with open(image_path, "wb") as f:
                         f.write(image_file.getbuffer())
                     
-                    # Tambahkan laporan baru
                     laporan_baru = {
                         "title": f"{title} di {location}",
                         "description": description,
@@ -169,40 +153,6 @@ def laporkan_kecelakaan():
                     st.error(f"Error saat menyimpan laporan: {str(e)}")
             else:
                 st.error("Harap isi semua kolom yang diperlukan!")
-
-def setup_camera_layout():
-    """Setup layout kamera dan tombol capture"""
-    col1, col2 = st.columns(2)
-    col3, col4 = st.columns(2)
-    
-    st.session_state.placeholders = {
-        'cam1': col1.empty(),
-        'cam2': col2.empty(),
-        'cam3': col3.empty(),
-        'cam4': col4.empty()
-    }
-    
-    capture_col1, capture_col2, capture_col3, capture_col4 = st.columns(4)
-    return {
-        'Depan': capture_col1.button("Capture Depan"),
-        'Belakang': capture_col2.button("Capture Belakang"),
-        'Kanan': capture_col3.button("Capture Kanan"),
-        'Kiri': capture_col4.button("Capture Kiri")
-    }
-
-def handle_capture(frame, position):
-    """Menangani proses capture gambar"""
-    if not st.session_state.camera_captured[position]:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"captured_{position}_{timestamp}.jpg"
-        filepath = os.path.join(CAPTURED_IMAGES_DIR, filename)
-        
-        # Simpan gambar dalam format BGR
-        cv2.imwrite(filepath, cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
-        
-        st.session_state.captured_images.append(filepath)
-        st.session_state.camera_captured[position] = True
-        st.success(f"Gambar {position} berhasil diambil!")
 
 def main():
     """Fungsi utama aplikasi"""
@@ -219,40 +169,68 @@ def main():
     if menu == "Stream Kamera":
         st.write("### Streaming Kamera Blind Spot")
         
-        # Kontrol kamera
+        # Kontrol kamera di sidebar
         if st.sidebar.button("Mulai Semua Kamera ▶"):
             st.session_state.cameras_active = True
         if st.sidebar.button("Hentikan Semua Kamera ⛔"):
             st.session_state.cameras_active = False
         
-        # Setup layout kamera
-        capture_buttons = setup_camera_layout()
+        # Layout 2x2 untuk kamera
+        col1, col2 = st.columns(2)
+        col3, col4 = st.columns(2)
+        
+        # Create placeholders for each camera
+        cam1_placeholder = col1.empty()
+        cam2_placeholder = col2.empty()
+        cam3_placeholder = col3.empty()
+        cam4_placeholder = col4.empty()
+        
+        # Tombol capture untuk setiap kamera
+        capture_col1, capture_col2, capture_col3, capture_col4 = st.columns(4)
+        capture_buttons = {
+            'Depan': capture_col1.button("Capture Depan", disabled=st.session_state.camera_captured['Depan']),
+            'Belakang': capture_col2.button("Capture Belakang", disabled=st.session_state.camera_captured['Belakang']),
+            'Kanan': capture_col3.button("Capture Kanan", disabled=st.session_state.camera_captured['Kanan']),
+            'Kiri': capture_col4.button("Capture Kiri", disabled=st.session_state.camera_captured['Kiri'])
+        }
         
         if st.session_state.cameras_active:
+            st.write("Kamera aktif. Mendeteksi kendaraan...")
+            
             try:
-                video_path = "carsVideo.mp4"  # Sesuaikan dengan path video Anda
+                video_path = "carsVideo.mp4"
                 video_frames = process_video(video_path)
                 
                 if video_frames:
                     for frame in video_frames:
-                        # Update semua placeholder dengan frame baru
-                        for placeholder in st.session_state.placeholders.values():
-                            placeholder.image(frame, use_column_width=True)
+                        # Update semua kamera dengan frame baru
+                        cam1_placeholder.image(frame, caption="Kamera Depan", use_column_width=True)
+                        cam2_placeholder.image(frame, caption="Kamera Belakang", use_column_width=True)
+                        cam3_placeholder.image(frame, caption="Kamera Kanan", use_column_width=True)
+                        cam4_placeholder.image(frame, caption="Kamera Kiri", use_column_width=True)
                         
                         # Handle captures
                         for pos, button in capture_buttons.items():
-                            if button:
-                                handle_capture(frame, pos)
+                            if button and not st.session_state.camera_captured[pos]:
+                                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                                filename = f"captured_{pos}_{timestamp}.jpg"
+                                filepath = os.path.join(CAPTURED_IMAGES_DIR, filename)
+                                cv2.imwrite(filepath, cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
+                                st.session_state.captured_images.append(filepath)
+                                st.session_state.camera_captured[pos] = True
+                                st.success(f"Gambar {pos} berhasil diambil!")
                         
-                        time.sleep(0.1)  # Delay untuk mengurangi penggunaan CPU
-                        
+                        time.sleep(0.1)
+            
             except Exception as e:
                 st.error(f"Error dalam streaming kamera: {str(e)}")
         else:
-            # Tampilkan placeholder saat kamera tidak aktif
+            # Tampilkan placeholder hitam saat kamera tidak aktif
             placeholder_image = np.zeros((HEIGHT, WIDTH, 3), dtype=np.uint8)
-            for placeholder in st.session_state.placeholders.values():
-                placeholder.image(placeholder_image, caption="Kamera tidak aktif", use_column_width=True)
+            cam1_placeholder.image(placeholder_image, caption="Kamera Depan", use_column_width=True)
+            cam2_placeholder.image(placeholder_image, caption="Kamera Belakang", use_column_width=True)
+            cam3_placeholder.image(placeholder_image, caption="Kamera Kanan", use_column_width=True)
+            cam4_placeholder.image(placeholder_image, caption="Kamera Kiri", use_column_width=True)
             st.write("Kamera tidak aktif. Tekan 'Mulai Semua Kamera' untuk memulai.")
     
     elif menu == "Berita Kecelakaan":
