@@ -172,28 +172,17 @@ def main():
         if 'cameras_active' not in st.session_state:
             st.session_state.cameras_active = False
 
-        if st.sidebar.button("Mulai Semua Kamera"):
+        if st.sidebar.button("Mulai Semua Kamera ▶"):
             st.session_state.cameras_active = True
-        if st.sidebar.button("Hentikan Semua Kamera"):
+        if st.sidebar.button("Hentikan Semua Kamera ⛔"):
             st.session_state.cameras_active = False
-
-        # Initialize capture flags if not exists
-        if 'capture_flags' not in st.session_state:
-            st.session_state.capture_flags = [False, False, False, False]
-
-        # Reset Capture button
-        if st.sidebar.button("Reset Capture"):
-            st.session_state.capture_flags = [False, False, False, False]
-            clear_captured_images()  # Panggil fungsi untuk menghapus file
-            st.session_state.captured_images = []  # Kosongkan list captured_images
-            st.rerun()
 
         # Capture buttons for each camera
         capture_col1, capture_col2, capture_col3, capture_col4 = st.columns(4)
-        capture_button1 = capture_col1.button("Capture Depan ", disabled=st.session_state.capture_flags[0])
-        capture_button2 = capture_col2.button("Capture Belakang", disabled=st.session_state.capture_flags[1])
-        capture_button3 = capture_col3.button("Capture Kanan ", disabled=st.session_state.capture_flags[2])
-        capture_button4 = capture_col4.button("Capture Kiri ", disabled=st.session_state.capture_flags[3])
+        capture_button1 = capture_col1.button("Capture Depan ")
+        capture_button2 = capture_col2.button("Capture Belakang")
+        capture_button3 = capture_col3.button("Capture Kanan ")
+        capture_button4 = capture_col4.button("Capture Kiri ")
 
         # Menjalankan Keempat Kamera
         if st.session_state.cameras_active:
@@ -218,19 +207,15 @@ def main():
                     cam3_placeholder.image(frame3, channels="BGR", use_container_width=True, caption="Kamera Kanan")
                     cam4_placeholder.image(frame4, channels="BGR", use_container_width=True, caption="Kamera Kiri")
 
-                    # Capture images if buttons are pressed (only once per camera)
-                    if capture_button1 and not st.session_state.capture_flags[0]:
+                    # Capture images if buttons are pressed
+                    if capture_button1:
                         st.session_state.captured_images.append(capture_image(frame1))
-                        st.session_state.capture_flags[0] = True
-                    if capture_button2 and not st.session_state.capture_flags[1]:
+                    if capture_button2:
                         st.session_state.captured_images.append(capture_image(frame2))
-                        st.session_state.capture_flags[1] = True
-                    if capture_button3 and not st.session_state.capture_flags[2]:
+                    if capture_button3:
                         st.session_state.captured_images.append(capture_image(frame3))
-                        st.session_state.capture_flags[2] = True
-                    if capture_button4 and not st.session_state.capture_flags[3]:
+                    if capture_button4:
                         st.session_state.captured_images.append(capture_image(frame4))
-                        st.session_state.capture_flags[3] = True
 
                 except StopIteration:
                     st.warning("Salah satu atau lebih video telah selesai.")
