@@ -13,7 +13,7 @@ def process_video(video_path):
 
     video = cv2.VideoCapture(video_path)
     if not video.isOpened():
-        st.error(f"Failed to open video: {video_path}")
+        st.error(f"Gagal membuka video: {video_path}")
         return
 
     while True:
@@ -33,42 +33,52 @@ def process_video(video_path):
     video.release()
 
 # Fungsi Menampilkan Berita Kecelakaan
-def show_traffic_news():
+def tampilkan_berita():
     st.subheader("Berita Kecelakaan Lalu Lintas")
+
+    # Data berita dengan gambar
+    if 'news_data' not in st.session_state:
+        st.session_state.news_data = [
+            {"title": "Kecelakaan di Jalan A", 
+             "description": "Mobil menabrak pohon, menyebabkan kemacetan panjang.", 
+             "time": "10:30", 
+             "image": "https://via.placeholder.com/400x200.png?text=Kecelakaan+Jalan+A"},
+            {"title": "Tabrakan Beruntun di Jalan B", 
+             "description": "Kecelakaan melibatkan 3 mobil dan 1 motor.", 
+             "time": "14:20", 
+             "image": "https://via.placeholder.com/400x200.png?text=Tabrakan+Beruntun"},
+        ]
+
+    # Menampilkan berita dengan gambar
     for news in st.session_state.news_data:
-        st.write(f"**{news['title']}**")
-        st.write(f"🕒 {news['time']}")
-        st.write(news['description'])
+        st.image(news["image"], caption=news["title"], use_container_width=True)
+        st.write(f"🕒 Waktu: {news['time']}")
+        st.write(news["description"])
         st.markdown("---")
 
 # Fungsi Fitur Pelaporan Kecelakaan
-def report_accident():
+def laporkan_kecelakaan():
     st.subheader("Laporkan Kejadian Kecelakaan")
     title = st.text_input("Judul Laporan")
     description = st.text_area("Deskripsi Kejadian")
     location = st.text_input("Lokasi Kejadian")
+    image_url = st.text_input("Link Gambar (Opsional)")
 
     if st.button("Kirim Laporan"):
         if title and description and location:
-            new_report = {
+            laporan_baru = {
                 "title": f"{title} di {location}",
                 "description": description,
-                "time": datetime.now().strftime("%H:%M")
+                "time": datetime.now().strftime("%H:%M"),
+                "image": image_url if image_url else "https://via.placeholder.com/400x200.png?text=Tidak+Ada+Gambar"
             }
-            st.session_state.news_data.append(new_report)
+            st.session_state.news_data.append(laporan_baru)
             st.success("Laporan berhasil dikirim dan ditambahkan ke berita!")
         else:
-            st.error("Harap isi semua kolom!")
+            st.error("Harap isi semua kolom yang diperlukan!")
 
 # Fungsi Utama
 def main():
-    # Inisialisasi news_data jika belum ada
-    if 'news_data' not in st.session_state:
-        st.session_state.news_data = [
-            {"title": "Kecelakaan di Jalan A", "description": "Mobil menabrak pohon, menyebabkan kemacetan panjang.", "time": "10:30"},
-            {"title": "Tabrakan Beruntun di Jalan B", "description": "Kecelakaan melibatkan 3 mobil dan 1 motor.", "time": "14:20"},
-        ]
-
     # Judul Aplikasi
     st.title("Kamera Blind Spot Pada Kendaraan Besar")
 
@@ -77,8 +87,8 @@ def main():
     menu = st.sidebar.selectbox("Pilih Menu", ["Stream Kamera", "Berita Kecelakaan", "Laporkan Kecelakaan"])
 
     # Path Video Default (Disembunyikan)
-    video_path1 = "carsVideo.mp4"  # Path default kamera 1
-    video_path2 = "carsVideo.mp4"  # Path default kamera 2
+    video_path1 = "carsVideo.mp4"
+    video_path2 = "carsVideo.mp4"
 
     if menu == "Stream Kamera":
         st.write("### Kamera 1")
@@ -93,14 +103,14 @@ def main():
         if 'cameras_active' not in st.session_state:
             st.session_state.cameras_active = False
 
-        if st.sidebar.button("Start Both Cameras"):
+        if st.sidebar.button("Mulai Kedua Kamera"):
             st.session_state.cameras_active = True
-        if st.sidebar.button("Stop Both Cameras"):
+        if st.sidebar.button("Hentikan Kedua Kamera"):
             st.session_state.cameras_active = False
 
         # Menjalankan Kedua Kamera
         if st.session_state.cameras_active:
-            st.write("Cameras are active. Detecting vehicles...")
+            st.write("Kamera aktif. Mendeteksi kendaraan...")
 
             video_feed1 = process_video(video_path1)
             video_feed2 = process_video(video_path2)
@@ -113,16 +123,16 @@ def main():
                     cam1_placeholder.image(frame1, channels="BGR", use_container_width=True)
                     cam2_placeholder.image(frame2, channels="BGR", use_container_width=True)
                 except StopIteration:
-                    st.warning("One or both video streams have ended.")
+                    st.warning("Salah satu atau kedua video telah selesai.")
                     break
         else:
-            st.write("Cameras are inactive. Press 'Start Both Cameras' to begin.")
+            st.write("Kamera tidak aktif. Tekan 'Mulai Kedua Kamera' untuk memulai.")
 
     elif menu == "Berita Kecelakaan":
-        show_traffic_news()
+        tampilkan_berita()
 
     elif menu == "Laporkan Kecelakaan":
-        report_accident()
+        laporkan_kecelakaan()
 
 if __name__ == "__main__":
     main()
