@@ -105,6 +105,20 @@ def process_video(video_path):
         if 'cap' in locals():
             cap.release()
 
+def handle_capture(frame, position):
+    """Menangani proses capture gambar"""
+    if not st.session_state.camera_captured[position]:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"captured_{position}_{timestamp}.jpg"
+        filepath = os.path.join(CAPTURED_IMAGES_DIR, filename)
+        
+        # Simpan gambar dalam format BGR
+        cv2.imwrite(filepath, cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
+        
+        st.session_state.captured_images.append(filepath)
+        st.session_state.camera_captured[position] = True
+        st.success(f"Gambar {position} berhasil diambil!")
+
 def tampilkan_berita():
     """Menampilkan daftar berita kecelakaan"""
     st.subheader("Berita Kecelakaan Lalu Lintas")
@@ -161,7 +175,7 @@ def main():
     # Inisialisasi session state
     init_session_state()
     
-    # Sidebar
+    # Menu di sidebar
     st.sidebar.title("Menu")
     menu = st.sidebar.selectbox("Pilih Menu", 
                               ["Stream Kamera", "Berita Kecelakaan", "Laporkan Kecelakaan"])
@@ -175,7 +189,7 @@ def main():
         if st.sidebar.button("Hentikan Semua Kamera ⛔"):
             st.session_state.cameras_active = False
         
-        # Layout 2x2 untuk kamera
+        # Layout kamera
         col1, col2 = st.columns(2)
         col3, col4 = st.columns(2)
         
@@ -204,21 +218,15 @@ def main():
                 if video_frames:
                     for frame in video_frames:
                         # Update semua kamera dengan frame baru
-                        cam1_placeholder.image(frame, caption="Kamera Depan", use_column_width=True)
-                        cam2_placeholder.image(frame, caption="Kamera Belakang", use_column_width=True)
-                        cam3_placeholder.image(frame, caption="Kamera Kanan", use_column_width=True)
-                        cam4_placeholder.image(frame, caption="Kamera Kiri", use_column_width=True)
+                        cam1_placeholder.image(frame, caption="Kamera Depan", use_container_width=True)
+                        cam2_placeholder.image(frame, caption="Kamera Belakang", use_container_width=True)
+                        cam3_placeholder.image(frame, caption="Kamera Kanan", use_container_width=True)
+                        cam4_placeholder.image(frame, caption="Kamera Kiri", use_container_width=True)
                         
                         # Handle captures
                         for pos, button in capture_buttons.items():
                             if button and not st.session_state.camera_captured[pos]:
-                                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                                filename = f"captured_{pos}_{timestamp}.jpg"
-                                filepath = os.path.join(CAPTURED_IMAGES_DIR, filename)
-                                cv2.imwrite(filepath, cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
-                                st.session_state.captured_images.append(filepath)
-                                st.session_state.camera_captured[pos] = True
-                                st.success(f"Gambar {pos} berhasil diambil!")
+                                handle_capture(frame, pos)
                         
                         time.sleep(0.1)
             
@@ -227,10 +235,10 @@ def main():
         else:
             # Tampilkan placeholder hitam saat kamera tidak aktif
             placeholder_image = np.zeros((HEIGHT, WIDTH, 3), dtype=np.uint8)
-            cam1_placeholder.image(placeholder_image, caption="Kamera Depan", use_column_width=True)
-            cam2_placeholder.image(placeholder_image, caption="Kamera Belakang", use_column_width=True)
-            cam3_placeholder.image(placeholder_image, caption="Kamera Kanan", use_column_width=True)
-            cam4_placeholder.image(placeholder_image, caption="Kamera Kiri", use_column_width=True)
+            cam1_placeholder.image(placeholder_image, caption="Kamera Depan", use_container_width=True)
+            cam2_placeholder.image(placeholder_image, caption="Kamera Belakang", use_container_width=True)
+            cam3_placeholder.image(placeholder_image, caption="Kamera Kanan", use_container_width=True)
+            cam4_placeholder.image(placeholder_image, caption="Kamera Kiri", use_container_width=True)
             st.write("Kamera tidak aktif. Tekan 'Mulai Semua Kamera' untuk memulai.")
     
     elif menu == "Berita Kecelakaan":
