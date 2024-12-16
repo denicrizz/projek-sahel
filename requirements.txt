@@ -1,25 +1,25 @@
-# Library utama untuk computer vision dan image processing
-opencv-python
-opencv-contrib-python
+# Library utama untuk computer vision (versi headless untuk Streamlit)
+opencv-python-headless>=4.8.1.78
+opencv-contrib-python-headless>=4.8.1.78
 
 # Framework web untuk antarmuka
-streamlit
+streamlit>=1.29.0
 
 # Library pendukung
-python-dateutil
-Pillow
-numpy
-pandas
+python-dateutil>=2.8.2
+Pillow>=10.1.0
+numpy>=1.26.2
+pandas>=2.1.4
 
 # Library untuk path handling
-pathlib
+pathlib>=1.0.1
 
 # Library matematika
-scipy
+scipy>=1.11.4
 
 # Library untuk HTTP requests
-requests
-urllib3
+requests>=2.31.0
+urllib3>=2.1.0
 
 # Library untuk environment variables
-python-dotenv
+python-dotenv>=1.0.0
