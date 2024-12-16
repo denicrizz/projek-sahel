@@ -1,4 +1,31 @@
-streamlit
+# Library utama untuk computer vision dan image processing
+opencv-python
 opencv-python-headless
-numpy
+opencv-contrib-python
+
+# Framework web untuk antarmuka
+streamlit
+
+# Library pendukung untuk manipulasi tanggal dan waktu
 python-dateutil
+
+# Library sistem dan utilitas
+Pillow
+numpy
+pandas
+
+# Library untuk path handling
+pathlib
+
+# Library untuk manipulasi file dan direktori
+shutil-archive
+
+# Library matematika (jika diperlukan untuk perhitungan tambahan)
+scipy
+
+# Dependensi keamanan dan networking (opsional tapi direkomendasikan)
+requests
+urllib3
+
+# Library untuk menangani environment variables (opsional)
+python-dotenv
