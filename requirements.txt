@@ -1,5 +1,4 @@
 # Library utama untuk computer vision (versi headless untuk Streamlit)
-opencv-python-headless
 opencv-contrib-python-headless
 
 # Framework web untuk antarmuka
