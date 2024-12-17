@@ -17,6 +17,9 @@ pathlib
 # Library matematika
 scipy
 
+# Library untuk HTTP requests
+requests
+urllib3
 
 # Library untuk environment variables
 python-dotenv
